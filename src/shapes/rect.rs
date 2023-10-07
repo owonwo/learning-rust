@@ -1,7 +1,6 @@
 use crate::shapes::area::Area;
 use std::fmt::{Display, Formatter};
-use crate::shapes::circle::Circle;
-use crate::shapes::collision::Collides;
+use crate::shapes::collision::{Contains, PointIter, Points};
 
 pub struct Rect {
     pub x: f64,
@@ -10,64 +9,42 @@ pub struct Rect {
     pub height: f64,
 }
 
-impl Rect {
-    pub fn contains_point(&self, (x, y): (f64, f64)) -> bool {
+impl Contains for Rect {
+    fn contains_point(&self, (x, y): (f64, f64)) -> bool {
         return x >= self.x && x <= self.x + self.width &&
             y >= self.y && y <= self.y + self.height;
     }
 }
 
-
-impl Collides<Rect> for Rect {
-    fn is_colliding(&self, other: &Rect) -> bool {
-        self.contains_point((other.x, other.y))
+impl Points for Rect {
+    fn points(&self) -> PointIter {
+        return PointIter {
+            idx: 0,
+            points: vec![
+                (self.x, self.y),
+                (self.x + self.width, self.y),
+                (self.x + self.width, self.y + self.height),
+                (self.x, self.y + self.height),
+            ],
+        };
     }
 }
-
-
-impl Collides<Circle> for Rect {
-    fn is_colliding(&self, other: &Circle) -> bool {
-        self.contains_point((other.x, other.y))
-    }
-}
-
-
-pub struct RectIter {
-    points: Vec<(f64, f64)>,
-    index: usize,
-}
-
-impl Iterator for RectIter {
-    type Item = (f64, f64);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index > self.points.len() {
-            return None;
-        }
-
-        let value = self.points.get(self.index);
-        self.index += 1;
-
-        return value.map(|x| *x);
-    }
-}
-
 
 impl IntoIterator for Rect {
     type Item = (f64, f64);
-    type IntoIter = RectIter;
+    type IntoIter = PointIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        return (&(self)).into();
+        return (&(self)).points();
     }
 }
 
 impl IntoIterator for &Rect {
     type Item = (f64, f64);
-    type IntoIter = RectIter;
+    type IntoIter = PointIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        return (self).into();
+        return (self).points();
     }
 }
 
@@ -95,19 +72,5 @@ impl Display for Rect {
             "Rectangle({},{}) {}x{}",
             self.x, self.y, self.width, self.height
         );
-    }
-}
-
-impl From<&Rect> for RectIter {
-    fn from(value: &Rect) -> Self {
-        return RectIter {
-            points: vec![
-                (value.x, value.y),
-                (value.x + value.width, value.y),
-                (value.x + value.width, value.y + value.height),
-                (value.x, value.y + value.height),
-            ],
-            index: 0,
-        };
     }
 }

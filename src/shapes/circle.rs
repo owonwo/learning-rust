@@ -1,6 +1,7 @@
+use std::str::FromStr;
 use crate::shapes::area::Area;
-use crate::shapes::collision::{Collides};
-use crate::shapes::rect::Rect;
+use crate::shapes::collision::{Contains, PointIter, Points};
+
 
 pub struct Circle {
     pub x: f64,
@@ -8,8 +9,9 @@ pub struct Circle {
     pub radius: f64,
 }
 
-impl Circle {
-    pub fn contains_point(&self, (x, y): (f64, f64)) -> bool {
+
+impl Contains for Circle {
+    fn contains_point(&self, (x, y): (f64, f64)) -> bool {
         let dx = self.x - x;
         let dy = self.y - y;
 
@@ -17,23 +19,12 @@ impl Circle {
     }
 }
 
-
-impl Collides<Rect> for Circle {
-    fn is_colliding(&self, other: &Rect) -> bool {
-        for point in other {
-            if self.contains_point(point) {
-                return true
-            }
-        }
-
-        return false;
-    }
-}
-
-
-impl Collides<Circle> for Circle {
-    fn is_colliding(&self, other: &Circle) -> bool {
-        self.contains_point((other.x, other.y))
+impl Points for Circle {
+    fn points(&self) -> PointIter {
+        return PointIter {
+            idx: 0,
+            points: vec![(self.x, self.y)],
+        };
     }
 }
 
@@ -43,3 +34,13 @@ impl Area for Circle {
     }
 }
 
+
+impl Default for Circle {
+    fn default() -> Self {
+        return Circle {
+            x: 0.0,
+            y: 0.0,
+            radius: 4.0,
+        };
+    }
+}

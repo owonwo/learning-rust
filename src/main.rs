@@ -134,17 +134,21 @@ pub fn compute_fn() {
         radius: 4.0,
     };
 
+    let circle2 = Circle::default();
 
     rec.y = 3.0;
     rec.x = 24.0;
     rec.width = 24.0;
     rec.height = 12.0;
 
+
     rec.is_colliding(&circle);
     rec.is_colliding(&rec);
 
     circle.is_colliding(&rec);
     circle.is_colliding(&circle);
+    circle2.is_colliding(&circle);
+
 
     for (x, y) in &rec {
         println!("Rectangle x->{} y->{}", x, y);
