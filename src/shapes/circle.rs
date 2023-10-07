@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use crate::shapes::area::Area;
 use crate::shapes::collision::{Contains, PointIter, Points};
@@ -34,7 +35,6 @@ impl Area for Circle {
     }
 }
 
-
 impl Default for Circle {
     fn default() -> Self {
         return Circle {
@@ -42,5 +42,31 @@ impl Default for Circle {
             y: 0.0,
             radius: 4.0,
         };
+    }
+}
+
+impl Display for Circle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Circle ({},{},{})", self.x, self.y, self.radius)
+    }
+}
+
+impl FromStr for Circle {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split(" ").collect();
+
+        if parts.len() != 3 {
+            return Err(anyhow::anyhow!("Invalid number of parts"));
+        }
+
+        return Ok(
+            Circle {
+                x: parts[0].parse()?,
+                y: parts[1].parse()?,
+                radius: parts[2].parse()?,
+            }
+        );
     }
 }

@@ -1,5 +1,6 @@
 use crate::shapes::area::Area;
 use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 use crate::shapes::collision::{Contains, PointIter, Points};
 
 pub struct Rect {
@@ -72,5 +73,27 @@ impl Display for Rect {
             "Rectangle({},{}) {}x{}",
             self.x, self.y, self.width, self.height
         );
+    }
+}
+
+
+impl FromStr for Rect {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v: Vec<&str> = s
+            .split(" ")
+            .collect();
+
+        if v.len() != 4 {
+            return Err(anyhow::anyhow!("Invalid Rect type provided!"));
+        }
+
+        return Ok(Rect {
+            x: v[0].parse()?,
+            y: v[1].parse()?,
+            width: v[2].parse()?,
+            height: v[3].parse()?,
+        });
     }
 }

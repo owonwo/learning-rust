@@ -1,10 +1,10 @@
+use crate::shapes::{circle::Circle, rect::Rect};
+use crate::shapes::area::Area;
+use crate::shapes::collision::{Collides, Contains};
+use crate::shapes::shape::Shape;
+
 mod practice;
 mod shapes;
-
-use crate::shapes::area::Area;
-use crate::shapes::{circle::Circle, rect::Rect};
-use crate::shapes::collision::Collides;
-
 
 fn main() {
     let file = std::fs::read_to_string("./file.txt");
@@ -28,7 +28,54 @@ fn main() {
     practice::practice(vec![4, 1, 0, 4], 2);
     practice::log_lines();
 
-    compute_fn();
+    compute();
+    let _ = print_shapes();
+}
+
+pub fn compute() {
+    let mut rec = Rect::default();
+    let circle = Circle {
+        x: 0.0,
+        y: 0.0,
+        radius: 4.0,
+    };
+
+    rec.contains_point((rec.x, rec.y));
+    rec.contains_point((circle.x, circle.y));
+
+    rec.y = 3.0;
+    rec.x = 24.0;
+    rec.width = 24.0;
+    rec.height = 12.0;
+
+    for (x, y) in &rec {
+        println!("Rectangle x->{} y->{}", x, y);
+    }
+
+    println!("Circle area {}", circle.area());
+    println!("Rectangle {}", rec.to_string());
+}
+
+pub fn print_shapes() -> Result<(), std::io::Error> {
+    let file = std::fs::read_to_string("shape.txt")?;
+
+    let shapes = file.lines()
+        .filter_map(|str| str.parse::<Shape>().ok())
+        .collect::<Vec<_>>();
+
+    let collisions: Vec<(&Shape, &Shape)> = shapes
+        .iter()
+        .skip(1)
+        .zip(shapes.iter().take(shapes.len() - 1))
+        .filter(|(a, b)| a.is_colliding(b))
+        .collect();
+
+    for (a, b) in collisions {
+        println!("{} intersects {}", a, b);
+    }
+
+
+    return Ok(());
 }
 
 // fn multiply(num: Option<usize>) -> usize {
@@ -99,61 +146,3 @@ fn main() {
 //     pub last_name: str,
 //     age: isize,
 // }
-
-// pub fn compute() {
-//     let mut rec = Rect::default();
-//     let circle = Circle {
-//         x: 0.0,
-//         y: 0.0,
-//         radius: 4.0,
-//     };
-//
-//     rec.contains_point((rec.x, rec.y));
-//     rec.contains_point((circle.x, circle.y));
-//
-//     rec.y = 3.0;
-//     rec.x = 24.0;
-//     rec.width = 24.0;
-//     rec.height = 12.0;
-//
-//     for (x, y) in &rec {
-//         println!("Rectangle x->{} y->{}", x, y);
-//     }
-//
-//     println!("Circle area {}", circle.area());
-//     println!("Rectangle {}", rec.to_string());
-// }
-//
-
-
-pub fn compute_fn() {
-    let mut rec = Rect::default();
-    let circle = Circle {
-        x: 0.0,
-        y: 0.0,
-        radius: 4.0,
-    };
-
-    let circle2 = Circle::default();
-
-    rec.y = 3.0;
-    rec.x = 24.0;
-    rec.width = 24.0;
-    rec.height = 12.0;
-
-
-    rec.is_colliding(&circle);
-    rec.is_colliding(&rec);
-
-    circle.is_colliding(&rec);
-    circle.is_colliding(&circle);
-    circle2.is_colliding(&circle);
-
-
-    for (x, y) in &rec {
-        println!("Rectangle x->{} y->{}", x, y);
-    }
-
-    println!("Circle area {}", circle.area());
-    println!("Rectangle {}", rec.to_string());
-}
