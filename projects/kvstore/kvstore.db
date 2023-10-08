@@ -1,0 +1,3 @@
+region	us
+auth_type	session
+os	windows
