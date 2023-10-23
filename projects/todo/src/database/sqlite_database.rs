@@ -1,5 +1,5 @@
 use rusqlite::{Connection, Result};
-use crate::{todo_manager::{TodoManager}, todo::TodoItem};
+use crate::{todo_manager::TodoManager, todo::TodoItem};
 
 const STORAGE_DIRECTORY: &str = "./storage";
 
@@ -39,17 +39,20 @@ impl SQLDatabase {
 }
 
 impl TodoManager for SQLDatabase {
-    fn get_items(&self) -> Result<Vec<(String, String)>, anyhow::Error> {
+    fn get_items(&self) -> Result<Vec<TodoItem>, anyhow::Error> {
         let conn = SQLDatabase::init().expect("Unable to establish connection");
-        let stmt = conn.conn.prepare("SELECT id, status, title FROM TodoItem");
+        let stmt = conn.conn.prepare("SELECT status, id, title FROM TodoItem");
 
         let value = match stmt {
             Ok(mut stmt_handle) => {
                 let rows = stmt_handle.query_map([], |p| {
-                    Ok((p.get::<_, String>(1)?, p.get::<_, String>(2)?, ))
+                    let status = p.get::<_, bool>(0)?;
+                    let name = p.get::<_, String>(2)?;
+
+                    Ok(TodoItem::new(name, status))
                 });
 
-                let results: Result<Vec<(String, String)>, rusqlite::Error> = rows?.collect();
+                let results: Result<Vec<TodoItem>, rusqlite::Error> = rows?.collect();
 
                 Ok(results?)
             },
@@ -60,11 +63,23 @@ impl TodoManager for SQLDatabase {
     }
 
     fn add_item(&self, item: TodoItem) -> Result<(), anyhow::Error> {
-    //     conn.conn.execute("
-    //     INSERT INTO TodoItem (id, status, title, created_at)
-    //     VALUES (1, true, {title}, now());
-    // ", );
-        todo!()
+        let conn = SQLDatabase::init().expect("Unable to establish connection");
+
+        // TODO: Only save distinct TodoItems
+        let status = match &item.status {
+            true => "1".to_owned(),
+            false => "0".to_owned(),
+        };
+
+        let result = conn.conn.execute(
+            "INSERT INTO TodoItem (status, title) VALUES (:status, :title);", 
+            &[(":title", &item.text), (":status", &status)]
+        );
+
+        return match result {
+            Ok(_) => Ok(()),
+            Err(err) => Err(anyhow::anyhow!("Unable to save todo item {}", err))
+        }
     }
 }
 

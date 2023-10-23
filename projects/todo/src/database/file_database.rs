@@ -71,12 +71,16 @@ impl From<FileDatabase> for Vec<(String, String)> {
 }
 
 impl TodoManager for FileDatabase {
-    fn get_items(&self) -> Result<Vec<(String, String)>, anyhow::Error> {
+    fn get_items(&self) -> Result<Vec<TodoItem>, anyhow::Error> {
         let database = FileDatabase::new("./todos.db");
         match database {
             Ok(db) => {
                let entries: Vec<_> = db.into();
-               return Ok(entries);
+
+               Ok(entries.into_iter().filter_map(|(name, status)| {
+                let status_parsed = status.parse::<bool>().ok()?;
+                return Some(TodoItem::new(name, status_parsed));
+               }).collect())
             }
             Err(err) => Err(anyhow::anyhow!("Unable to retrieve items {err}"))
         }
@@ -85,7 +89,7 @@ impl TodoManager for FileDatabase {
     fn add_item(&self, _item: TodoItem) -> Result<(), anyhow::Error> {
         let database = FileDatabase::new("./todos.db");
         match database {
-            Ok(mut db) => {
+            Ok(db) => {
                 db.save_changes();
                 Ok(())
             },

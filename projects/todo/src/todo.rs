@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use console::style;
 
-use crate::{database::{file_database::FileDatabase, sqlite_database::SQLDatabase}, todo_manager::TodoManager};
+use crate::{database::{sqlite_database::SQLDatabase}, todo_manager::TodoManager};
 
 pub enum TodoAction {
     Add,
@@ -24,8 +24,8 @@ impl TodoAction {
 }
 
 pub struct TodoItem {
-    text: String,
-    status: bool,
+    pub text: String,
+    pub status: bool,
 }
 
 impl TodoItem {
@@ -45,12 +45,21 @@ impl Display for TodoItem {
 
 /** Add the new item to the test_1 **/
 pub fn add_item(string: Vec<String>) -> () {
-    for i in string {
-        let item = TodoItem::new(i, false);
-        let status_string = item.status.to_string();
+    for i in &string {
+        let item = TodoItem::new(i.to_owned(), false);
+        let db = SQLDatabase::init().expect("Unable to communicate with Database");
 
+        let _ = db.add_item(item);
         // strategy.set(&item.text, &status_string);
     }
+
+    if &string.len() > &2 {
+        println!("✨ {} Todos added", string.len());
+    } else {
+        println!("✨ Todo added");
+    }
+    
+    return ();
 }
 
 pub fn list_item() -> () {
@@ -62,13 +71,14 @@ pub fn list_item() -> () {
 
         match records {
             Ok(entries) => {
-                for (status, text) in entries {
-                    let item_is_checked = status.parse::<bool>().unwrap_or(false);
+                for item in entries {
+                    let item_is_checked = item.status;
+
                     if item_is_checked {
-                        println!("{}", style(text).red().strikethrough());
+                        println!("{}", style(item.text).red().strikethrough());
                     } else {
-                        println!("{}", text);
-                    }        
+                        println!("{}", item.text);
+                    } 
                 }
             }
             Err(err) => panic!("{}", err)
