@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use console::style;
 
-use crate::database::Database;
+use crate::{database::{file_database::FileDatabase, sqlite_database::SQLDatabase}, todo_manager::TodoManager};
 
 pub enum TodoAction {
     Add,
@@ -23,7 +23,7 @@ impl TodoAction {
     }
 }
 
-struct TodoItem {
+pub struct TodoItem {
     text: String,
     status: bool,
 }
@@ -43,44 +43,35 @@ impl Display for TodoItem {
     }
 }
 
-
-
-/** Add the new item to the database **/
+/** Add the new item to the test_1 **/
 pub fn add_item(string: Vec<String>) -> () {
-    let database = Database::new("./todos.db");
+    for i in string {
+        let item = TodoItem::new(i, false);
+        let status_string = item.status.to_string();
 
-    match database {
-        Ok(mut db) => {
-            for i in string {
-                let item = TodoItem::new(i, false);
-                let status_string = item.status.to_string();
-
-                db.set(&item.text, &status_string);
-            }
-
-            db.save_changes();
-        }
-        Err(_) => {
-            println!("Database file not found");
-        }
+        // strategy.set(&item.text, &status_string);
     }
 }
 
 pub fn list_item() -> () {
-    let database = Database::new("./todos.db");
+    let database = SQLDatabase::init();
 
-    match database {
-        Ok(db) => {
-            let entries: Vec<_> = db.into();
-            for (text, status) in entries {
-                let item_is_checked = status.parse::<bool>().unwrap_or(false);
-                if item_is_checked {
-                    println!("{}", style(text).red().strikethrough());
-                } else {
-                    println!("{}", text);
+    if let Ok(db) = database {
+        let records = db.get_items();
+        // let entries = // strategy.get_items()
+
+        match records {
+            Ok(entries) => {
+                for (status, text) in entries {
+                    let item_is_checked = status.parse::<bool>().unwrap_or(false);
+                    if item_is_checked {
+                        println!("{}", style(text).red().strikethrough());
+                    } else {
+                        println!("{}", text);
+                    }        
                 }
             }
+            Err(err) => panic!("{}", err)
         }
-        Err(_) => todo!(),
     }
 }

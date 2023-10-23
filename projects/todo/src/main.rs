@@ -1,7 +1,8 @@
-use console::style;
-mod database;
 mod todo;
+mod todo_manager;
+pub mod database;
 
+use console::style;
 use todo::{TodoAction, list_item, add_item};
 
 fn main() {
