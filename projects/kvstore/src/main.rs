@@ -11,7 +11,7 @@ fn main() -> Result<(), std::io::Error> {
         return Err(Error::new(ErrorKind::Other, "Argument required"));
     };
 
-    // decode serialized kv pairs from database file
+    // decode serialized kv pairs from test_1 file
     let file_name = String::from("kvstore.db");
     let mut database = Database::new(&file_name)?;
 

@@ -9,6 +9,7 @@ pub enum TodoAction {
     Remove,
     List,
     Unknown,
+    Check,
 }
 
 impl TodoAction {
@@ -18,6 +19,7 @@ impl TodoAction {
             "done" => TodoAction::Done,
             "remove" => TodoAction::Remove,
             "list" => TodoAction::List,
+            "check" => TodoAction::Check,
             _ => TodoAction::Unknown,
         }
     }
@@ -84,4 +86,12 @@ pub fn list_item() -> () {
             Err(err) => panic!("{}", err)
         }
     }
+}
+
+pub fn check_item(item: String) -> () {
+    // strategy.check()
+    let db = SQLDatabase::init().expect("No database connection established");
+    db.check_item(&item);
+
+    return ()
 }

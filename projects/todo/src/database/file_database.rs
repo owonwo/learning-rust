@@ -96,4 +96,8 @@ impl TodoManager for FileDatabase {
             Err(err) => Err(anyhow::anyhow!("Unable to add Todo {err}"))
         }
     }
+
+    fn check_item(&self, item: &String) -> Result<(), anyhow::Error> {
+        todo!("FSDatabase: Add check item feature")
+    }
 }
